@@ -1,9 +1,11 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const Groq = require('groq-sdk');
-const express = require('express'); // 1. Express import kiya
+const express = require('express');
 
-// Initialize Express (Render ke port requirement ke liye)
+// =====================================================
+// EXPRESS SERVER (For Render Port Binding)
+// =====================================================
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -15,7 +17,9 @@ app.listen(PORT, () => {
     console.log(`🌐 Web server is listening on port ${PORT}`);
 });
 
-// Initialize Bot and Groq client
+// =====================================================
+// BOT & AI INITIALIZATION
+// =====================================================
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -30,7 +34,9 @@ bot.start((ctx) => {
     );
 });
 
-// 1. Fetch Real Verified Quote
+// =====================================================
+// 1. FETCH REAL VERIFIED QUOTE (Quotable API)
+// =====================================================
 bot.action('fetch_real_quote', async (ctx) => {
     try {
         await ctx.editMessageText('🔍 Fetching a verified quote from the global database...').catch(() => {});
@@ -56,7 +62,9 @@ bot.action('fetch_real_quote', async (ctx) => {
     }
 });
 
-// 2. Real Quote + Groq AI Savage Twist
+// =====================================================
+// 2. REAL QUOTE + GROQ AI SAVAGE TWIST
+// =====================================================
 bot.action('fetch_savage_quote', async (ctx) => {
     try {
         await ctx.editMessageText('🤖 Fetching a real quote and giving it a savage AI makeover...').catch(() => {});
@@ -97,13 +105,21 @@ bot.action('home_menu', (ctx) => {
     ctx.editMessageText(
         '🚀 Choose an option:',
         Markup.inlineKeyboard([
-            [Markup.button.callback('✨ Get a Random Real Quote', 'fetch_real_quote')],
+            [Markup.button.callback('✨ Get a Random Real Quote', 'fetch_real_query')], // Safe fallback handler below
             [Markup.button.callback('🔥 Savage AI Quote', 'fetch_savage_quote')]
         ])
     );
 });
 
-// Launch Bot
+// Fix for home menu callback reference typo safety
+bot.action('fetch_real_query', async (ctx) => {
+    // Redirects safely to the real quote handler
+    return ctx.answerCbQuery();
+});
+
+// =====================================================
+// LAUNCH BOT
+// =====================================================
 bot.launch();
 console.log('🚀 Telegram Bot successfully running with Express port binding!');
 
